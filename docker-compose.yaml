@@ -1,0 +1,77 @@
+version: "3"
+networks:
+  chaskiq:
+
+services:
+  chaskiq-frontend:
+    container_name: chaskiq-frontend
+    image: chaskiq/chaskiq:latest
+    depends_on:
+      - chaskiq-postgres
+      - chaskiq-redis
+    networks:
+      - chaskiq
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+    entrypoint: /app/docker-entrypoint.sh
+    volumes:
+      - ./docker-entrypoint.sh:/app/docker-entrypoint.sh
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+
+  chaskiq-sidekiq:
+    image: chaskiq/chaskiq:latest
+    container_name: chaskiq-sidekiq
+    depends_on:
+      - chaskiq-frontend
+      - chaskiq-postgres
+      - chaskiq-redis
+    networks:
+      - chaskiq
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+    command: bundle exec sidekiq -C config/sidekiq.yml
+    env_file:
+      - .env
+
+  chaskiq-postgres:
+    image: postgres:14-alpine
+    container_name: chaskiq-postgres
+    restart: always
+    networks:
+      - chaskiq
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    env_file:
+      - .env
+    ports:
+      - ${DB_PORT}
+    healthcheck:
+      test: pg_isready -U ${POSTGRES_USER} -p ${DB_PORT} -h ${DB_HOST}
+      interval: 2s
+
+  chaskiq-redis:
+    image: redis:5-alpine
+    container_name: chaskiq-redis
+    restart: always
+    networks:
+      - chaskiq
+    volumes:
+      - ./data/redis:/data
+    env_file:
+      - .env
+    ports:
+      - 6379
+    healthcheck:
+      test: redis-cli ping
+      interval: 1s
+      timeout: 3s
+      retries: 30
