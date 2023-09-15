@@ -9,3 +9,6 @@ Small docker-compose.yml with .env.example file and docker-entrypoint.sh which c
 
 # Run
 docker-compose up -d
+
+# Post Installation
+ - After a first succesful start, edit docker-entrypoint.sh and comment the line "bundle exec rake admin_generator"
