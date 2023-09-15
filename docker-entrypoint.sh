@@ -33,7 +33,9 @@ echo "Running packages update..."
 bundle exec rails packages:update
 echo "Finished packages update."
 
-# Generate Admin account
+# Generate Admin account 
+# Comment next line after the admin user has been succesfully generated, 
+# otherwise you will end up creating admin user every start
 bundle exec rake admin_generator
 
 bundle exec rails s -b 0.0.0.0 -p 3000
