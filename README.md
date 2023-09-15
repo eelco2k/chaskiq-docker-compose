@@ -9,6 +9,7 @@ Small docker-compose.yml with .env.example file and docker-entrypoint.sh which c
 
 # Run
 - chmod +x docker-entrypoint.sh
+- remove .gitkeep file in data/postgres/ directory (otherwise postgres server won't start)
 - docker-compose up -d
 
 # Post Installation
